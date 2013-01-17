@@ -66,7 +66,9 @@ fastboot_flash_image()
 
 flash_fastboot()
 {
-	run_adb reboot bootloader ;
+	if [ $DEVICE != "panda" ]; then
+		run_adb reboot bootloader ;
+	fi
 	run_fastboot devices &&
 	( [ "$1" = "nounlock" ] || run_fastboot oem unlock || true )
 
@@ -81,14 +83,18 @@ flash_fastboot()
 		;;
 
 	*)
-		run_fastboot erase cache &&
-		run_fastboot erase userdata &&
+		run_fastboot erase cache
+		if [ $DEVICE != "panda" ]; then
+	        	run_fastboot erase userdata
+		fi
 		fastboot_flash_image userdata &&
 		([ ! -e out/target/product/$DEVICE/boot.img ] ||
 		fastboot_flash_image boot) &&
 		fastboot_flash_image system &&
-		run_fastboot reboot &&
-		update_time
+		run_fastboot reboot
+		if [ $DEVICE != "panda" ]; then
+		        update_time
+		fi
 		;;
 	esac
 	echo -ne \\a
